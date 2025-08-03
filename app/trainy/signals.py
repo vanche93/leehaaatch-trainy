@@ -35,6 +35,8 @@ def update_training_status(sender, instance, action, **kwargs):
                         filter_reqs = TrainingReq.objects.filter(
                             training=training, training_times=time, topics=topic
                         )
+                        # Удаляем участников из тренировки
+                        training.participants.clear()
                         for freq in filter_reqs:
                             # Добавляем участников из запросы в тренировку
                             training.participants.add(freq.student)
