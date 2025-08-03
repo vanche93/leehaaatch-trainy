@@ -1,0 +1,34 @@
+version: "3.9"
+services:
+  web:
+    build: ./app
+    environment:
+      - MEDIA_ROOT=${MEDIA_ROOT}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG}
+      - STATIC_ROOT=${STATIC_ROOT}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
+      - DATABASES_PATCH=${DATABASES_PATCH}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - TELEGRAM_MINIAPP_URL=${TELEGRAM_MINIAPP_URL}
+    volumes:
+      - db:/db
+      - media:/media
+      - static:/static
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - static:/static
+      - media:/media
+    ports:
+      - "8000:80"
+    depends_on:
+      - web
+
+volumes:
+  db:
+  static:
+  media:
