@@ -39,7 +39,8 @@ def update_training_status(sender, instance, action, **kwargs):
                             # Добавляем участников из запросы в тренировку
                             training.participants.add(freq.student)
                         training.save()
-                        break
+                        return True
+    return False
 
 
 @receiver(post_save, sender=Training)
