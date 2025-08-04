@@ -1,8 +1,8 @@
 from django.db import models
 
 class Student(models.Model):
-    name = models.CharField(verbose_name='Имя', blank=True, null=True)
-    tg_name = models.CharField(verbose_name='Ник telegram', blank=False, unique=True)
+    name = models.CharField(verbose_name='Имя', blank=True, null=True, unique=False)
+    tg_name = models.CharField(verbose_name='Ник telegram', blank=False, unique=False)
     tg_id = models.CharField(verbose_name='Telegram ID', blank=False, unique=True)
     notes = models.TextField(verbose_name='Заметки',blank=True)
 

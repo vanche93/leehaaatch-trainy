@@ -45,25 +45,7 @@
     <script>
         const tg = window.Telegram.WebApp;
         Telegram.WebApp.BackButton.hide();
-        const user = tg.initDataUnsafe?.user;
-        if (user) {
-        // Пример user: {id, first_name, last_name, username, language_code}
-        console.log('User:', user);
         Telegram.WebApp.showCloseButton();
-        // Отправляем на сервер через fetch
-        fetch('{% url 'create_student' %}', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(user)
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Студент добавлен:', data);
-        })
-        .catch(console.error);
-        }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
   </body>

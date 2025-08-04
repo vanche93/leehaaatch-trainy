@@ -62,8 +62,8 @@
                 {% csrf_token %} {{ form|crispy }}
                 <input
                   type="hidden"
-                  name="telegram_id"
-                  id="telegram-id-field"
+                  name="tg_init_data"
+                  id="tg_init_data"
                 />
               </form>
             </div>
@@ -82,28 +82,9 @@
       tg.MainButton.setText("Отправить");
       tg.MainButton.show();
       tg.MainButton.onClick(() => {
-      document.querySelector("form").submit();
+       document.querySelector("form").submit();
       });
-      const user = tg.initDataUnsafe?.user;
-      if (user) {
-      // Пример user: {id, first_name, last_name, username, language_code}
-      console.log('User:', user);
-
-      // Отправляем на сервер через fetch
-      fetch('{% url 'create_student' %}', {
-          method: 'POST',
-          headers: {
-          'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(user)
-      })
-      .then(response => response.json())
-      .then(data => {
-          console.log('Студент добавлен:', data);
-      })
-      .catch(console.error);
-      document.getElementById('telegram-id-field').value = user.id
-      }
+      document.getElementById('tg_init_data').value = tg.initData
     </script>
   </body>
 </html>

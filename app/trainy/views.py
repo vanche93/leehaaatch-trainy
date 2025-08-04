@@ -3,10 +3,21 @@ from django.views.generic import ListView
 from .forms import TrainingReqForm
 from .models import Training, TrainingReq, Student
 from django.contrib import messages
-import json
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from datetime import date
+from django.conf import settings
+from telegram_webapp_auth.auth import TelegramAuthenticator
+
+
+def get_or_create_student(auth_cred):
+    telegram_authenticator = TelegramAuthenticator(settings.TELEGRAM_SECRET_KEY)
+    init_data = telegram_authenticator.validate(auth_cred)
+    name_parts = [init_data.user.first_name, init_data.user.last_name]
+    name = " ".join(part for part in name_parts if part)
+    student, created = Student.objects.update_or_create(
+        tg_id=init_data.user.id,
+        defaults={"tg_name": init_data.user.username, "name": name},
+    )
+    return student
 
 
 def create_training_request(request, training_id):
@@ -18,18 +29,23 @@ def create_training_request(request, training_id):
         form = TrainingReqForm(request.POST, training=training)
 
         if form.is_valid():
-            telegram_id = request.POST.get("telegram_id")
-            student = Student.objects.get(tg_id=telegram_id)
-            if TrainingReq.objects.filter(student=student, training=training).exists():
-                messages.warning(request, "Вы уже записаны на эту тренировку!")
-                return redirect(request.path)
+            if request.POST.get("tg_init_data"):
+                student = get_or_create_student(request.POST.get("tg_init_data"))
+                if TrainingReq.objects.filter(
+                    student=student, training=training
+                ).exists():
+                    messages.warning(request, "Вы уже записаны на эту тренировку!")
+                    return redirect(request.path)
+                else:
+                    training_req = form.save(commit=False)
+                    training_req.training = training
+                    training_req.student = student
+                    training_req.save()
+                    form.save_m2m()
+                    messages.success(request, "Запрос на тренировку отправлен!")
+                    return redirect(request.path)
             else:
-                training_req = form.save(commit=False)
-                training_req.training = training
-                training_req.student = student
-                training_req.save()
-                form.save_m2m()
-                messages.success(request, "Запрос на тренировку отправлен!")
+                messages.warning(request, "Ошибка авторизации")
                 return redirect(request.path)
     else:
         form = TrainingReqForm(training=training)
@@ -37,22 +53,6 @@ def create_training_request(request, training_id):
     return render(
         request, "training_req_form.html", {"form": form, "training": training}
     )
-
-
-@csrf_exempt
-def create_student(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        telegram_id = data.get("id")
-        name = data.get("first_name", "") + data.get("last_name", "")
-        username = data.get("username", "")
-
-        student, created = Student.objects.get_or_create(
-            tg_id=telegram_id, tg_name=username, name=name
-        )
-
-        return JsonResponse({"created": created, "student_id": student.id})
-    return JsonResponse({"error": "Invalid method"}, status=405)
 
 
 class OpenTrainings(ListView):
