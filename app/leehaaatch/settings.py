@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from telegram_webapp_auth.auth import generate_secret_key
 
 load_dotenv()
 
@@ -143,5 +144,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 X_FRAME_OPTIONS = 'ALLOW-FROM https://web.telegram.org/'
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_SECRET_KEY = generate_secret_key(TELEGRAM_BOT_TOKEN)
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 TELEGRAM_MINIAPP_URL = os.getenv('TELEGRAM_MINIAPP_URL')
