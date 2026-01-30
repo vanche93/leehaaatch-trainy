@@ -3,7 +3,6 @@ from .models import Student, TrainingTime, TrainingTopic, Training, TrainingReq,
 from django.utils.html import format_html
 
 
-admin.site.register(Student)
 admin.site.register(TrainingTime)
 admin.site.register(TrainingTopic)
 
@@ -32,11 +31,42 @@ class TrainingReqInline(admin.TabularInline):
         return False
 
 
+class TrainingInline(admin.TabularInline):
+    model = Training.participants.through
+    can_delete = False
+    verbose_name = "Тренировка"
+    verbose_name_plural = "Тренировки"
+
+    readonly_fields = ("training", "training_date", "training_final_topic")
+    fields = ("training", "training_date", "training_final_topic")
+
+    @admin.display(description="Дата")
+    def training_date(self, obj):
+        return obj.training.date
+    
+    @admin.display(description="Тема")
+    def training_final_topic(self, obj):
+        return obj.training.final_topic
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+@admin.register(Student)
+class StudentAdmin(admin.ModelAdmin):
+    inlines = [TrainingInline, TrainingReqInline]
+
 @admin.register(Training)
 class TrainingAdmin(admin.ModelAdmin):
     list_display = ("name", "date", "status")
     inlines = [TrainingReqInline]
     readonly_fields = ("participants", "final_time", "final_topic")
+    list_filter = ["status", "date", "place","final_topic","participants"]
 
 @admin.register(TrainingPlace)
 class TrainingAdmin(admin.ModelAdmin):
