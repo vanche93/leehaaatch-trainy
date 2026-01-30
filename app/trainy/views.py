@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from .forms import TrainingReqForm
 from .models import Training, TrainingReq, Student
@@ -34,19 +34,16 @@ def create_training_request(request):
                 if TrainingReq.objects.filter(
                     student=student, training=training
                 ).exists():
-                    messages.warning(request, "Вы уже записаны на эту тренировку!")
-                    return redirect(request.get_full_path())
+                    messages.warning(request, "Вы уже записаны на эту тренировку.")
                 else:
                     training_req = form.save(commit=False)
                     training_req.training = training
                     training_req.student = student
                     training_req.save()
                     form.save_m2m()
-                    messages.success(request, "Запрос на тренировку отправлен!")
-                    return redirect(request.get_full_path())
+                    messages.success(request, "Запрос на тренировку отправлен.")
             else:
-                messages.warning(request, "Ошибка авторизации")
-                return redirect(request.get_full_path())
+                messages.warning(request, "Ошибка авторизации.")
     else:
         form = TrainingReqForm(training=training)
 
