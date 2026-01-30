@@ -1,6 +1,6 @@
 {% load crispy_forms_tags %}
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
@@ -53,18 +53,16 @@
             </div>
             {% endfor %}
           </div>
-          {% endif %} {% if training.status == 'open' %}
+          {% endif %}
+          {% if training.status == 'open' %}
           <!-- Форма запроса -->
           <div class="card shadow-sm">
             <div class="card-body">
               <h5 class="card-title mb-3">Записаться на тренировку</h5>
               <form method="post">
                 {% csrf_token %} {{ form|crispy }}
-                <input
-                  type="hidden"
-                  name="tg_init_data"
-                  id="tg_init_data"
-                />
+                <input type="hidden" name="tg_init_data" id="tg_init_data" />
+                <input type="hidden" name="tgWebAppStartParam" value="{{ training.id }}">
               </form>
             </div>
           </div>
@@ -78,13 +76,14 @@
       const tg = window.Telegram.WebApp;
       Telegram.WebApp.BackButton.show();
       Telegram.WebApp.BackButton.onClick(() => {
-        window.history.back()});
+        window.history.back();
+      });
       tg.MainButton.setText("Отправить");
       tg.MainButton.show();
       tg.MainButton.onClick(() => {
-       document.querySelector("form").submit();
+        document.querySelector("form").submit();
       });
-      document.getElementById('tg_init_data').value = tg.initData
+      document.getElementById("tg_init_data").value = tg.initData;
     </script>
   </body>
 </html>

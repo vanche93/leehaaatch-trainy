@@ -30,7 +30,7 @@ class Telegram:
                 [
                     {
                         "text": "Записатся на тренировку",
-                        "url": settings.TELEGRAM_MINIAPP_URL,
+                        "url": settings.TELEGRAM_MINIAPP_URL + "?startapp=" + str(training.id),
                     }
                 ]
             ]
