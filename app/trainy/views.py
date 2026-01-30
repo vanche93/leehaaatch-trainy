@@ -23,7 +23,7 @@ def get_or_create_student(auth_cred):
 def create_training_request(request):
     training = get_object_or_404(Training, id=request.GET.get("tgWebAppStartParam"))
     if training.status != "open":
-        messages.warning(request, "Запись на эту тренировку закрыта.")
+        messages.warning(request, "Запись на тренировку закрыта.")
 
     if request.method == "POST":
         form = TrainingReqForm(request.POST, training=training)

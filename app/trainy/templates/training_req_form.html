@@ -35,25 +35,6 @@
               </p>
             </div>
           </div>
-          <!-- Сообщения -->
-          {% if messages %}
-          <div class="mb-3">
-            {% for message in messages %}
-            <div
-              class="alert alert-{{ message.tags }} alert-dismissible fade show"
-              role="alert"
-            >
-              {{ message }}
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="alert"
-                aria-label="Close"
-              ></button>
-            </div>
-            {% endfor %}
-          </div>
-          {% endif %}
           {% if training.status == 'open' %}
           <!-- Форма запроса -->
           <div class="card shadow-sm">
@@ -70,14 +51,14 @@
         </div>
       </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       const tg = window.Telegram.WebApp;
-      Telegram.WebApp.BackButton.show();
-      Telegram.WebApp.BackButton.onClick(() => {
-        window.history.back();
-      });
+      {% if messages %}
+        Telegram.WebApp.showAlert("{% for message in messages %} {{ message }} {% endfor %}", () => {
+          Telegram.WebApp.close();
+        });
+      {% endif %}
       tg.MainButton.setText("Отправить");
       tg.MainButton.show();
       tg.MainButton.onClick(() => {
