@@ -2,7 +2,7 @@ from django.db import models
 
 class Student(models.Model):
     name = models.CharField(verbose_name='Имя', blank=True, null=True, unique=False)
-    tg_name = models.CharField(verbose_name='Ник telegram', blank=False, unique=False)
+    tg_name = models.CharField(verbose_name='Ник telegram', blank=True, null=True, unique=False)
     tg_id = models.CharField(verbose_name='Telegram ID', blank=False, unique=True)
     notes = models.TextField(verbose_name='Заметки',blank=True)
 
@@ -11,7 +11,7 @@ class Student(models.Model):
         verbose_name_plural = 'Ученики'
 
     def __str__(self):
-        return f'{self.name}({self.tg_name})'
+        return f'{self.name if self.name else ""}({self.tg_name if self.tg_name else self.tg_id})'
 
 class TrainingTime(models.Model):
     time = models.TimeField(verbose_name='Время', unique=True)
