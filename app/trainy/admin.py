@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Student, TrainingTime, TrainingTopic, Training, TrainingReq
+from .models import Student, TrainingTime, TrainingTopic, Training, TrainingReq, TrainingPlace
 from django.utils.html import format_html
 
 
@@ -37,3 +37,15 @@ class TrainingAdmin(admin.ModelAdmin):
     list_display = ("name", "date", "status")
     inlines = [TrainingReqInline]
     readonly_fields = ("participants", "final_time", "final_topic")
+
+@admin.register(TrainingPlace)
+class TrainingAdmin(admin.ModelAdmin):
+    readonly_fields = ("open_in_maps",)
+
+    def open_in_maps(self, obj):
+        return format_html(
+            '<a class="button" href="{}" target="_blank">Открыть на карте</a>',
+            obj.yandex_maps_url()
+        )
+
+    open_in_maps.short_description = "Карта"

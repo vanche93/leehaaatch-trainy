@@ -20,6 +20,7 @@ class Telegram:
             f"✅ *Открыта запись на тренировку!*\n\n"
             + (f"📌 *Название:* {training.name}\n" if training.name else '')
             + f"📅 *Дата:* {training.date.strftime('%d.%m.%Y')}\n"
+            + f"📍 *Место:* [{training.place.name}{", " + training.place.address if training.place.address else ''}]({training.place.yandex_maps_url()})\n"
             + f"📚 *Темы:*\n"
             + f"{chr(10).join([f'  • {t.name}' for t in training.topics.all()])}\n"
             + f"🕒 *Время:*\n"
@@ -51,6 +52,7 @@ class Telegram:
             f"✅ *Тренировка собрана!*\n\n"
             + (f"📌 *Название:* {training.name}\n" if training.name else '')
             + f"📅 *Дата:* {training.date.strftime('%d.%m.%Y')}\n"
+            + f"📍 *Место:* [{training.place.name}{", " + training.place.address if training.place.address else ''}]({training.place.yandex_maps_url()})\n"
             + f"📚 *Тема:* {training.final_topic}\n"
             + f"🕒 *Время:* {training.final_time}\n\n"
             + f"👥 *Участники:*\n"
@@ -71,6 +73,7 @@ class Telegram:
             f"✅ *Вы записаны на тренировку!*\n\n"
             + (f"📌 *Название:* {training.name}\n" if training.name else '')
             + f"📅 *Дата:* {training.date.strftime('%d.%m.%Y')}\n"
+            + f"📍 *Место:* [{training.place.name}{", " + training.place.address if training.place.address else ''}]({training.place.yandex_maps_url()})\n"
             + f"📚 *Тема:* {training.final_topic}\n"
             + f"🕒 *Время:* {training.final_time}\n\n"
         )

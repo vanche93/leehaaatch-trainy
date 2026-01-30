@@ -13,6 +13,22 @@ class Student(models.Model):
     def __str__(self):
         return f'{self.name if self.name else ""}({self.tg_name if self.tg_name else self.tg_id})'
 
+class TrainingPlace(models.Model):
+    name = models.CharField(verbose_name='Имя', unique=True)
+    address = models.CharField(verbose_name='Адрес', blank=True, null=True)
+    latitude = models.FloatField(verbose_name='Широта')
+    longitude = models.FloatField(verbose_name='Долгота')
+
+    class Meta:
+        verbose_name = 'Локация'
+        verbose_name_plural = 'Локации'
+
+    def yandex_maps_url(self):
+        return f"https://yandex.ru/maps/?whatshere[point]={self.longitude},{self.latitude}&whatshere[zoom]=19"
+
+    def __str__(self):
+        return self.name
+
 class TrainingTime(models.Model):
     time = models.TimeField(verbose_name='Время', unique=True)
 
@@ -38,6 +54,9 @@ class TrainingTopic(models.Model):
 class Training(models.Model):
     name = models.CharField(verbose_name='Имя', blank=True, null=True)
     description = models.TextField(verbose_name='Описание',blank=True)
+    place = models.ForeignKey(TrainingPlace, verbose_name='Локация',
+                                   on_delete=models.PROTECT, related_name='place',
+                                   blank=False, null=False)
     date = models.DateField(verbose_name='Дата')
     training_times = models.ManyToManyField(TrainingTime, verbose_name='Времена начала тренировки')
     topics = models.ManyToManyField(TrainingTopic, verbose_name='Темы тренировки')
