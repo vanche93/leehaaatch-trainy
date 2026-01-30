@@ -66,5 +66,23 @@ class Telegram:
         except Exception as e:
             print(f"Ошибка при отправке Telegram-сообщения: {e}")
 
+    def send_close_message_participants(self, training):
+        close_message = (
+            f"✅ *Вы записаны на тренировку!*\n\n"
+            + (f"📌 *Название:* {training.name}\n" if training.name else '')
+            + f"📅 *Дата:* {training.date.strftime('%d.%m.%Y')}\n"
+            + f"📚 *Тема:* {training.final_topic}\n"
+            + f"🕒 *Время:* {training.final_time}\n\n"
+        )
+        for participant in training.participants.all():
+            data = {
+                "chat_id": participant.tg_id,
+                "text": close_message,
+                "parse_mode": "Markdown",
+            }
+            try:
+                requests.post(self.url, data=data).raise_for_status()
+            except Exception as e:
+                print(f"Ошибка при отправке Telegram-сообщения: {e}")
 
 telegram = Telegram()
