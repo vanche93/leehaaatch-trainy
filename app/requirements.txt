@@ -1,5 +1,5 @@
 crispy-bootstrap5==2025.6
-Django==5.2.10
+Django==6.0.1
 django-crispy-forms==2.5
 python-dotenv==1.2.1
 requests==2.32.5
