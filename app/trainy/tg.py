@@ -1,8 +1,12 @@
 import requests
 import json
 from django.conf import settings
+from django.tasks import task
 import re
 
+@task
+def send_message(url,data):
+    requests.post(url, data=data).raise_for_status()
 
 class Telegram:
 
@@ -42,10 +46,7 @@ class Telegram:
             "parse_mode": "Markdown",
             "reply_markup": json.dumps(keyboard),
         }
-        try:
-            requests.post(self.url, data=data).raise_for_status()
-        except Exception as e:
-            print(f"Ошибка при отправке Telegram-сообщения: {e}")
+        send_message.enqueue(self.url,data)
 
     def send_close_message(self, training):
         close_message = (
@@ -63,10 +64,7 @@ class Telegram:
             "text": close_message,
             "parse_mode": "Markdown",
         }
-        try:
-            requests.post(self.url, data=data).raise_for_status()
-        except Exception as e:
-            print(f"Ошибка при отправке Telegram-сообщения: {e}")
+        send_message.enqueue(self.url,data)
 
     def send_close_message_participants(self, training):
         close_message = (
@@ -83,9 +81,6 @@ class Telegram:
                 "text": close_message,
                 "parse_mode": "Markdown",
             }
-            try:
-                requests.post(self.url, data=data).raise_for_status()
-            except Exception as e:
-                print(f"Ошибка при отправке Telegram-сообщения: {e}")
+            send_message.enqueue(self.url,data)
 
 telegram = Telegram()
