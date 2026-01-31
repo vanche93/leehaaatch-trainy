@@ -3,6 +3,8 @@ import json
 from django.conf import settings
 from django.tasks import task
 import re
+from datetime import datetime, timedelta
+import pytz
 
 @task
 def send_message(url,data):
@@ -82,5 +84,25 @@ class Telegram:
                 "parse_mode": "Markdown",
             }
             send_message.enqueue(self.url,data)
+
+    def send_notify_message_participants(self, training):
+        close_message = (
+            f"⏰ *Напоминание о тренировке!*\n\n"
+            + (f"📌 *Название:* {training.name}\n" if training.name else '')
+            + f"📅 *Дата:* {training.date.strftime('%d.%m.%Y')}\n"
+            + f"📍 *Место:* [{training.place.name}{", " + training.place.address if training.place.address else ''}]({training.place.yandex_maps_url()})\n"
+            + f"📚 *Тема:* {training.final_topic}\n"
+            + f"🕒 *Время:* {training.final_time}\n\n"
+        )
+        for participant in training.participants.all():
+            data = {
+                "chat_id": participant.tg_id,
+                "text": close_message,
+                "parse_mode": "Markdown",
+            }
+            training_datetime = datetime.combine(training.date,training.final_time.time)
+            notify_time = training_datetime.astimezone(pytz.timezone('Europe/Moscow')) - timedelta(hours=settings.TELGRAM_NOTIFY_HOURS_BEFORE)
+            notify = send_message.using(run_after=notify_time)
+            notify.enqueue(self.url,data)
 
 telegram = Telegram()
