@@ -92,7 +92,8 @@ class Training(models.Model):
                     .distinct()
                     .count()
                 )
-                topic_dict['times'].append((time, cnt, cnt * 100//self.max_participants))
+                reqs = TrainingReq.objects.filter(training=self, topics=topic, training_times=time)
+                topic_dict['times'].append((time, cnt, cnt * 100//self.max_participants, reqs))
             results.append(topic_dict)
         return results
 
