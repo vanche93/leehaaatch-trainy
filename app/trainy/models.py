@@ -98,7 +98,7 @@ class Training(models.Model):
         return results
 
     def __str__(self):
-        return f' {self.date.strftime('%d.%m.%Y')}: {self.name}'
+        return f" {self.date.strftime('%d.%m.%Y')}: {self.name}"
 
 class TrainingReq(models.Model):
     student = models.ForeignKey(Student, verbose_name='Ученик', on_delete=models.PROTECT)
