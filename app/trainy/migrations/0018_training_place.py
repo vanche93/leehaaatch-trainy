@@ -15,6 +15,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(create_default_trainingplace),
         migrations.AddField(
             model_name='training',
             name='place',
