@@ -81,6 +81,21 @@ class Training(models.Model):
         verbose_name = 'Тренировка'
         verbose_name_plural = 'Тренировки'
 
+    def req_sum(self):
+        results = []
+        for topic in self.topics.all():
+            topic_dict = {'topic': topic, 'times': []}
+            for time in self.training_times.all():
+                cnt = (
+                    TrainingReq.objects
+                    .filter(training=self, topics=topic, training_times=time)
+                    .distinct()
+                    .count()
+                )
+                topic_dict['times'].append((time, cnt, cnt * 100//self.max_participants))
+            results.append(topic_dict)
+        return results
+
     def __str__(self):
         return f' {self.date.strftime('%d.%m.%Y')}: {self.name}'
 
