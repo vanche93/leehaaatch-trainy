@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from .forms import TrainingReqForm
 from .models import Training, TrainingReq, Student
@@ -20,10 +20,10 @@ def get_or_create_student(auth_cred):
     return student
 
 
-def create_training_request(request, training_id):
-    training = get_object_or_404(Training, id=training_id)
+def create_training_request(request):
+    training = get_object_or_404(Training, id=request.GET.get("tgWebAppStartParam"))
     if training.status != "open":
-        messages.warning(request, "Запись на эту тренировку закрыта.")
+        messages.warning(request, "Голосование закрыто.")
 
     if request.method == "POST":
         form = TrainingReqForm(request.POST, training=training)
@@ -34,30 +34,19 @@ def create_training_request(request, training_id):
                 if TrainingReq.objects.filter(
                     student=student, training=training
                 ).exists():
-                    messages.warning(request, "Вы уже записаны на эту тренировку!")
-                    return redirect(request.path)
+                    messages.warning(request, "Вы уже отправили голос.")
                 else:
                     training_req = form.save(commit=False)
                     training_req.training = training
                     training_req.student = student
                     training_req.save()
                     form.save_m2m()
-                    messages.success(request, "Запрос на тренировку отправлен!")
-                    return redirect(request.path)
+                    messages.success(request, "Голос отправлен.")
             else:
-                messages.warning(request, "Ошибка авторизации")
-                return redirect(request.path)
+                messages.warning(request, "Ошибка авторизации.")
     else:
         form = TrainingReqForm(training=training)
 
     return render(
         request, "training_req_form.html", {"form": form, "training": training}
     )
-
-
-class OpenTrainings(ListView):
-    model = Training
-    template_name = "open_trainings.html"
-
-    def get_queryset(self):
-        return Training.objects.filter(status="open", date__gte=date.today())

@@ -1,8 +1,12 @@
 from django.urls import path
-from .views import create_training_request, OpenTrainings
+from .views import create_training_request
 
 urlpatterns = [
-    path("", OpenTrainings.as_view(), name="list_open_trainings"),
+    path(
+        "",
+        create_training_request,
+        name="create_training_req",
+    ),
     path(
         "training-request/<int:training_id>/",
         create_training_request,

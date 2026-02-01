@@ -1,8 +1,14 @@
 import requests
 import json
 from django.conf import settings
+from django.tasks import task
 import re
+from datetime import datetime, timedelta
+import pytz
 
+@task
+def send_message(url,data):
+    requests.post(url, data=data).raise_for_status()
 
 class Telegram:
 
@@ -17,9 +23,10 @@ class Telegram:
 
     def send_open_message(self, training):
         open_message = (
-            f"✅ *Открыта запись на тренировку!*\n\n"
+            f"✅ *Открыто голосование на тренировку!*\n\n"
             + (f"📌 *Название:* {training.name}\n" if training.name else '')
             + f"📅 *Дата:* {training.date.strftime('%d.%m.%Y')}\n"
+            + f"📍 *Место:* [{training.place.name}{", " + training.place.address if training.place.address else ''}]({training.place.yandex_maps_url()})\n"
             + f"📚 *Темы:*\n"
             + f"{chr(10).join([f'  • {t.name}' for t in training.topics.all()])}\n"
             + f"🕒 *Время:*\n"
@@ -29,8 +36,8 @@ class Telegram:
             "inline_keyboard": [
                 [
                     {
-                        "text": "Записатся на тренировку",
-                        "url": settings.TELEGRAM_MINIAPP_URL,
+                        "text": "Голосовать",
+                        "url": settings.TELEGRAM_MINIAPP_URL + "?startapp=" + str(training.id),
                     }
                 ]
             ]
@@ -41,30 +48,71 @@ class Telegram:
             "parse_mode": "Markdown",
             "reply_markup": json.dumps(keyboard),
         }
-        try:
-            requests.post(self.url, data=data).raise_for_status()
-        except Exception as e:
-            print(f"Ошибка при отправке Telegram-сообщения: {e}")
+        send_message.enqueue(self.url,data)
 
     def send_close_message(self, training):
+        participants_list = []
+        for p in training.participants.all():
+            if p.tg_name and p.name:
+                participants_list.append(f"  • {self.escape_md(p.name)} @{self.escape_md(p.tg_name)}")
+            elif p.tg_name:
+                participants_list.append(f"  • @{self.escape_md(p.tg_name)}")
+            elif p.name:
+                participants_list.append(f"  • {self.escape_md(p.name)}")
+            else:
+                participants_list.append(f"  • Аноним")
         close_message = (
-            f"✅ *Тренировка собрана!*\n\n"
+            f"✅ *Тренировка состоится!*\n\n"
             + (f"📌 *Название:* {training.name}\n" if training.name else '')
             + f"📅 *Дата:* {training.date.strftime('%d.%m.%Y')}\n"
+            + f"📍 *Место:* [{training.place.name}{", " + training.place.address if training.place.address else ''}]({training.place.yandex_maps_url()})\n"
             + f"📚 *Тема:* {training.final_topic}\n"
             + f"🕒 *Время:* {training.final_time}\n\n"
             + f"👥 *Участники:*\n"
-            + f"{chr(10).join([f'  • @{self.escape_md(p.tg_name)}' for p in training.participants.all()])}"
+            + f"{chr(10).join(participants_list)}"
         )
         data = {
             "chat_id": self.chat_id,
             "text": close_message,
             "parse_mode": "Markdown",
         }
-        try:
-            requests.post(self.url, data=data).raise_for_status()
-        except Exception as e:
-            print(f"Ошибка при отправке Telegram-сообщения: {e}")
+        send_message.enqueue(self.url,data)
 
+    def send_close_message_participants(self, training):
+        close_message = (
+            f"✅ *Вы записаны на тренировку!*\n\n"
+            + (f"📌 *Название:* {training.name}\n" if training.name else '')
+            + f"📅 *Дата:* {training.date.strftime('%d.%m.%Y')}\n"
+            + f"📍 *Место:* [{training.place.name}{", " + training.place.address if training.place.address else ''}]({training.place.yandex_maps_url()})\n"
+            + f"📚 *Тема:* {training.final_topic}\n"
+            + f"🕒 *Время:* {training.final_time}\n\n"
+        )
+        for participant in training.participants.all():
+            data = {
+                "chat_id": participant.tg_id,
+                "text": close_message,
+                "parse_mode": "Markdown",
+            }
+            send_message.enqueue(self.url,data)
+
+    def send_notify_message_participants(self, training):
+        close_message = (
+            f"⏰ *Напоминание о тренировке!*\n\n"
+            + (f"📌 *Название:* {training.name}\n" if training.name else '')
+            + f"📅 *Дата:* {training.date.strftime('%d.%m.%Y')}\n"
+            + f"📍 *Место:* [{training.place.name}{", " + training.place.address if training.place.address else ''}]({training.place.yandex_maps_url()})\n"
+            + f"📚 *Тема:* {training.final_topic}\n"
+            + f"🕒 *Время:* {training.final_time}\n\n"
+        )
+        for participant in training.participants.all():
+            data = {
+                "chat_id": participant.tg_id,
+                "text": close_message,
+                "parse_mode": "Markdown",
+            }
+            training_datetime = datetime.combine(training.date,training.final_time.time)
+            notify_time = training_datetime.astimezone(pytz.timezone('Europe/Moscow')) - timedelta(hours=settings.TELEGRAM_NOTIFY_HOURS_BEFORE)
+            notify = send_message.using(run_after=notify_time)
+            notify.enqueue(self.url,data)
 
 telegram = Telegram()

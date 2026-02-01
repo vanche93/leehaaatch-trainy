@@ -1,90 +1,382 @@
 {% load crispy_forms_tags %}
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Запись на тренировку</title>
+    <title>Отправить голос</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <style>
+      :root {
+        /* Telegram-like palette */
+        --primary-color: #2CA5E0; /* telegram blue */
+        --primary-dark: #1B95D6;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --bg-gradient: linear-gradient(135deg, #ffffff 0%, #eaf8ff 100%);
+        --card-shadow: 0 8px 24px rgba(12, 38, 63, 0.08);
+      }
+
+      body {
+        background: #f8fafc;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      }
+
+      .container {
+        max-width: 900px;
+      }
+
+      .card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: var(--card-shadow);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+      }
+
+      .card-img-top {
+        border-radius: 12px 12px 0 0;
+        height: 220px;
+        object-fit: cover;
+      }
+
+      .card-body {
+        padding: 1.2rem;
+      }
+
+      .card-body.focused {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 50px rgba(12, 38, 63, 0.12);
+        border-radius: 12px;
+      }
+
+      .card-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+      }
+
+      .card-text {
+        font-size: 1rem;
+        color: #6b7280;
+        line-height: 1.6;
+      }
+
+      .card-text strong {
+        color: #374151;
+        font-weight: 600;
+      }
+
+      h5.card-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1f2937;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 1.5rem;
+      }
+
+      .list-group-item {
+        border: none;
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0.9rem 0;
+        transition: background 0.15s ease;
+      }
+
+      .list-group-item:last-child {
+        border-bottom: none;
+      }
+
+      .list-group-item:hover {
+        background: #f9fafb;
+      }
+
+      .list-group-item .fw-semibold {
+        font-size: 1.1rem;
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+
+      .progress {
+        height: 18px;
+        border-radius: 999px;
+        background-color: #edf2f7;
+        overflow: hidden;
+        min-width: 0;
+      }
+
+      .progress-bar {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+        transition: width 0.5s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 0.5rem;
+      }
+
+      .small-progress {
+        flex: 1 1 140px;
+        min-width: 110px;
+      }
+
+      .progress-bar.text-bg-warning {
+        background: linear-gradient(90deg, #f59e0b, #fbbf24) !important;
+        color: white;
+      }
+
+      .progress-bar.text-bg-success {
+        background: linear-gradient(90deg, #10b981, #34d399) !important;
+      }
+
+      .progress-bar.text-bg-info {
+        background: linear-gradient(90deg, var(--primary-color), #a6e1fb) !important;
+      }
+
+      .progress-bar.text-bg-danger {
+        background: linear-gradient(90deg, #ef4444, #f87171) !important;
+      }
+
+      .progress-bar[style*="width: 0%"] {
+        background: #e6e9ee !important;
+        color: #6b7280;
+      }
+
+      .form-control, .form-select {
+        border-radius: 8px;
+        border: 2px solid #e5e7eb;
+        padding: 0.75rem 1rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        font-size: 1rem;
+      }
+
+      .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      }
+
+      .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        background-color: var(--primary-dark);
+        border-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+      }
+
+      .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.85rem;
+      }
+
+      .row {
+        padding: 0.5rem 0;
+      }
+
+      /* reduce vertical padding utility used on container */
+      .py-5 {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+      }
+
+      /* Compact mobile tweaks */
+      @media (max-width: 430px) {
+        .container { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .card-img-top { height: 120px; }
+        .card-body { padding: 0.75rem; }
+        .card-title { font-size: 1.05rem; }
+        .card-text { font-size: 0.9rem; }
+        .list-group-item { padding: 0.6rem 0; }
+        .badge { padding: 0.35rem 0.6rem; font-size: 0.75rem; }
+        .small-progress { min-width: 90px; flex: 1 1 100px; }
+        .fw-semibold { font-size: 0.98rem; }
+        .container { max-width: 100%; }
+        .col-lg-8 { width: 100%; }
+      }
+    </style>
   </head>
-  <body class="bg">
+  <body>
     <div class="container py-5">
       <div class="row justify-content-center">
         <div class="col-lg-8">
           <!-- Карточка тренировки -->
-          <div class="card mb-4 shadow-sm">
+          <div class="card mb-4">
             {% if training.image %}
             <img
               src="{{ training.image.url }}"
-              class="card-img-top img-fluid"
+              class="card-img-top"
               alt="{{ training.name }}"
             />
             {% endif %}
             <div class="card-body">
-              <h3 class="card-title">{{ training.name|default:"" }}</h3>
+              <h3 class="card-title">{{ training.name|default:"Тренировка" }}</h3>
               {% if training.description %}
-              <p class="card-text text-muted">{{ training.description }}</p>
+              <p class="card-text mb-3">{{ training.description }}</p>
               {% endif %}
               <p class="card-text">
-                <strong>Дата:</strong> {{ training.date }}
+                <strong>📅 Дата:</strong> {{ training.date|date:"d.m.Y" }}
+              </p>
+              <p class="card-text">
+                <strong>👥 Мест в группе:</strong> {{ training.max_participants }}
               </p>
             </div>
           </div>
-          <!-- Сообщения -->
-          {% if messages %}
-          <div class="mb-3">
-            {% for message in messages %}
-            <div
-              class="alert alert-{{ message.tags }} alert-dismissible fade show"
-              role="alert"
-            >
-              {{ message }}
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="alert"
-                aria-label="Close"
-              ></button>
-            </div>
-            {% endfor %}
-          </div>
-          {% endif %} {% if training.status == 'open' %}
+          {% if training.status == 'open' %}
           <!-- Форма запроса -->
-          <div class="card shadow-sm">
+          <div class="card mb-4">
             <div class="card-body">
-              <h5 class="card-title mb-3">Записаться на тренировку</h5>
+              <h6 class="card-title">✍️ Выберите время и тему</h6>
               <form method="post">
                 {% csrf_token %} {{ form|crispy }}
-                <input
-                  type="hidden"
-                  name="tg_init_data"
-                  id="tg_init_data"
-                />
+                <input type="hidden" name="tg_init_data" id="tg_init_data" />
+                <input type="hidden" name="tgWebAppStartParam" value="{{ training.id }}">
               </form>
+            </div>
+          </div>
+          {% endif %}
+          {% if training.req_sum %}
+          <div class="card"  tabindex="0">
+            <div class="card-body">
+              <h6 class="card-title">📊 Результаты голосования</h6>
+              <div class="list-group list-group-flush">
+                {% for row in training.req_sum %}
+                  <div class="list-group-item">
+                    <div class="fw-semibold mb-3">{{ row.topic.name }}</div>
+                    <div class="d-flex flex-row flex-wrap gap-2">
+                      {% for time_obj, cnt, percent, reqs in row.times %}
+                        <div class="badge-wrapper" style="position: relative; display: inline-block;">
+                          {% if percent >= 100 %}
+                            {% with 'bg-danger text-white' as cls %}
+                              <span class="badge {{ cls }} rounded-pill px-3 py-2 badge-btn" style="cursor: pointer; user-select: none;">{{ time_obj }} · {{ cnt }}/{{ training.max_participants }}</span>
+                            {% endwith %}
+                          {% elif percent >= 75 %}
+                            {% with 'bg-warning text-dark' as cls %}
+                              <span class="badge {{ cls }} rounded-pill px-3 py-2 badge-btn" style="cursor: pointer; user-select: none;">{{ time_obj }} · {{ cnt }}/{{ training.max_participants }}</span>
+                            {% endwith %}
+                          {% elif percent >= 50 %}
+                            {% with 'bg-success text-white' as cls %}
+                              <span class="badge {{ cls }} rounded-pill px-3 py-2 badge-btn" style="cursor: pointer; user-select: none;">{{ time_obj }} · {{ cnt }}/{{ training.max_participants }}</span>
+                            {% endwith %}
+                          {% elif percent >= 25 %}
+                            {% with 'bg-primary text-white' as cls %}
+                              <span class="badge {{ cls }} rounded-pill px-3 py-2 badge-btn" style="cursor: pointer; user-select: none;">{{ time_obj }} · {{ cnt }}/{{ training.max_participants }}</span>
+                            {% endwith %}
+                          {% else %}
+                            {% with 'bg-light text-muted border' as cls %}
+                              <span class="badge {{ cls }} rounded-pill px-3 py-2 badge-btn" style="cursor: pointer; user-select: none;">{{ time_obj }} · {{ cnt }}/{{ training.max_participants }}</span>
+                            {% endwith %}
+                          {% endif %}
+                          
+                          {% if reqs %}
+                            <div class="badge-dropdown" style="display: none; position: absolute; top: 100%; left: 0; margin-top: 4px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; min-width: 200px;">
+                              <div style="padding: 8px 12px; max-height: 300px; overflow-y: auto;">
+                                {% for req in reqs %}
+                                  <div style="padding: 6px 0; font-size: 13px; border-bottom: 1px solid #f0f0f0;">
+                                    {% if not req.student.name and not req.student.tg_name%}Anonym{% endif%}
+                                    {% if req.student.name %}{{ req.student.name }}{% endif %}
+                                    {% if req.student.tg_name %}<span style="color: #999;">@{{ req.student.tg_name }}</span>{% endif %}
+                                  </div>
+                                {% endfor %}
+                              </div>
+                            </div>
+                          {% endif %}
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
             </div>
           </div>
           {% endif %}
         </div>
       </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       const tg = window.Telegram.WebApp;
-      Telegram.WebApp.BackButton.show();
-      Telegram.WebApp.BackButton.onClick(() => {
-        window.history.back()});
-      tg.MainButton.setText("Отправить");
+      {% if messages %}
+        Telegram.WebApp.showAlert("{% for message in messages %} {{ message }} {% endfor %}", () => {
+          Telegram.WebApp.close();
+        });
+      {% endif %}
+      tg.MainButton.setText("Проголосовать!");
       tg.MainButton.show();
       tg.MainButton.onClick(() => {
-       document.querySelector("form").submit();
+        document.querySelector("form").submit();
       });
-      document.getElementById('tg_init_data').value = tg.initData
+      document.getElementById("tg_init_data").value = tg.initData;
+    </script>
+    <script>
+      // Badge dropdown toggle
+      (function(){
+        document.querySelectorAll('.badge-btn').forEach(badge => {
+          badge.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wrapper = badge.closest('.badge-wrapper');
+            const dropdown = wrapper.querySelector('.badge-dropdown');
+            if (dropdown) {
+              const isVisible = dropdown.style.display !== 'none';
+              document.querySelectorAll('.badge-dropdown').forEach(d => d.style.display = 'none');
+              if (!isVisible) {
+                dropdown.style.display = 'block';
+              }
+            }
+          });
+        });
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+          document.querySelectorAll('.badge-dropdown').forEach(d => d.style.display = 'none');
+        });
+      })();
+    </script>
+    <script>
+      // Click a card body to center it in viewport and highlight it
+      (function(){
+        function clearActive() {
+          document.querySelectorAll('.card-body.focused').forEach(el => el.classList.remove('focused'));
+        }
+
+        function onCardBodyActivate(e){
+          const el = e.currentTarget;
+          clearActive();
+          if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','-1');
+          el.classList.add('focused');
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          try { el.focus({ preventScroll: true }); } catch (err) { el.focus(); }
+        }
+
+        const cardBodies = document.querySelectorAll('.card .card-body');
+        cardBodies.forEach(body => {
+          body.style.cursor = 'pointer';
+          body.addEventListener('click', onCardBodyActivate);
+          body.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onCardBodyActivate.call(this, e); } });
+        });
+      })();
     </script>
   </body>
 </html>

@@ -17,6 +17,26 @@ from telegram_webapp_auth.auth import generate_secret_key
 
 load_dotenv()
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": os.getenv("ROOT_LOG_LEVEL", "WARNING"),
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+    },
+}
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,7 +65,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'trainy.apps.TrainyConfig',
     'crispy_forms',
-    'crispy_bootstrap5'
+    'crispy_bootstrap5',
+    "django_tasks",
+    "django_tasks.backends.database",
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -147,3 +169,10 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_SECRET_KEY = generate_secret_key(TELEGRAM_BOT_TOKEN)
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 TELEGRAM_MINIAPP_URL = os.getenv('TELEGRAM_MINIAPP_URL')
+TELEGRAM_NOTIFY_HOURS_BEFORE = int(os.getenv('TELEGRAM_NOTIFY_HOURS_BEFORE', '3'))
+
+TASKS = {
+    "default": {
+        "BACKEND": "django_tasks.backends.database.DatabaseBackend"
+    }
+}

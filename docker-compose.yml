@@ -1,6 +1,5 @@
-version: "3.9"
 services:
-  web:
+  web: &web
     build: ./app
     environment:
       - MEDIA_ROOT=${MEDIA_ROOT}
@@ -17,6 +16,10 @@ services:
       - db:/db
       - media:/media
       - static:/static
+
+  worker:
+    <<: *web
+    entrypoint: ['python', 'manage.py', 'db_worker']
 
   nginx:
     build: ./nginx

@@ -2,7 +2,7 @@ from django.db import models
 
 class Student(models.Model):
     name = models.CharField(verbose_name='Имя', blank=True, null=True, unique=False)
-    tg_name = models.CharField(verbose_name='Ник telegram', blank=False, unique=False)
+    tg_name = models.CharField(verbose_name='Ник telegram', blank=True, null=True, unique=False)
     tg_id = models.CharField(verbose_name='Telegram ID', blank=False, unique=True)
     notes = models.TextField(verbose_name='Заметки',blank=True)
 
@@ -11,7 +11,23 @@ class Student(models.Model):
         verbose_name_plural = 'Ученики'
 
     def __str__(self):
-        return f'{self.name}({self.tg_name})'
+        return f'{self.name if self.name else ""}({self.tg_name if self.tg_name else self.tg_id})'
+
+class TrainingPlace(models.Model):
+    name = models.CharField(verbose_name='Имя', unique=True)
+    address = models.CharField(verbose_name='Адрес', blank=True, null=True)
+    latitude = models.FloatField(verbose_name='Широта')
+    longitude = models.FloatField(verbose_name='Долгота')
+
+    class Meta:
+        verbose_name = 'Локация'
+        verbose_name_plural = 'Локации'
+
+    def yandex_maps_url(self):
+        return f"https://yandex.ru/maps/?whatshere[point]={self.longitude},{self.latitude}&whatshere[zoom]=19"
+
+    def __str__(self):
+        return self.name
 
 class TrainingTime(models.Model):
     time = models.TimeField(verbose_name='Время', unique=True)
@@ -38,6 +54,9 @@ class TrainingTopic(models.Model):
 class Training(models.Model):
     name = models.CharField(verbose_name='Имя', blank=True, null=True)
     description = models.TextField(verbose_name='Описание',blank=True)
+    place = models.ForeignKey(TrainingPlace, verbose_name='Локация',
+                                   on_delete=models.PROTECT, related_name='place',
+                                   blank=False, null=False)
     date = models.DateField(verbose_name='Дата')
     training_times = models.ManyToManyField(TrainingTime, verbose_name='Времена начала тренировки')
     topics = models.ManyToManyField(TrainingTopic, verbose_name='Темы тренировки')
@@ -52,7 +71,7 @@ class Training(models.Model):
                                    blank=True, null=True)
     status = models.CharField(verbose_name='Статус', default='created', choices=[
         ('created', 'Создана'),
-        ('open', 'Открыта для записи'),
+        ('open', 'Открыта для голосования'),
         ('full', 'Мест нет (заполнена)'),
         ('completed', 'Завершена'),
         ('canceled', 'Отменена')
@@ -62,8 +81,24 @@ class Training(models.Model):
         verbose_name = 'Тренировка'
         verbose_name_plural = 'Тренировки'
 
+    def req_sum(self):
+        results = []
+        for topic in self.topics.all():
+            topic_dict = {'topic': topic, 'times': []}
+            for time in self.training_times.all():
+                cnt = (
+                    TrainingReq.objects
+                    .filter(training=self, topics=topic, training_times=time)
+                    .distinct()
+                    .count()
+                )
+                reqs = TrainingReq.objects.filter(training=self, topics=topic, training_times=time)
+                topic_dict['times'].append((time, cnt, cnt * 100//self.max_participants, reqs))
+            results.append(topic_dict)
+        return results
+
     def __str__(self):
-        return f' {self.date.strftime('%d.%m.%Y')}: {self.name}'
+        return f" {self.date.strftime('%d.%m.%Y')}: {self.name}"
 
 class TrainingReq(models.Model):
     student = models.ForeignKey(Student, verbose_name='Ученик', on_delete=models.PROTECT)
