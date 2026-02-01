@@ -13,6 +13,11 @@ class TrainingReqAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "student", "training", "training_times", "topics")
     filter_horizontal = ("training_times", "topics")
 
+    def get_readonly_fields(self, request, obj=None):
+        if settings.DEBUG:
+            return ("created_at",)
+        return self.readonly_fields
+
     def has_add_permission(self, request):
         if settings.DEBUG:
             return True
@@ -30,8 +35,12 @@ class TrainingReqInline(admin.TabularInline):
     model = TrainingReq
     readonly_fields = ("student", "training", "training_times", "topics", "created_at")
 
+    def get_readonly_fields(self, request, obj=None):
+        if settings.DEBUG:
+            return ("created_at",)
+        return self.readonly_fields
+
     def has_add_permission(self, request, obj):
-        print(settings.DEBUG)
         if settings.DEBUG:
             return True
         else:
@@ -82,7 +91,7 @@ class TrainingAdmin(admin.ModelAdmin):
     list_filter = ["status", "date", "place","final_topic","participants"]
 
 @admin.register(TrainingPlace)
-class TrainingAdmin(admin.ModelAdmin):
+class TrainingPlaceAdmin(admin.ModelAdmin):
     readonly_fields = ("open_in_maps",)
 
     def open_in_maps(self, obj):
