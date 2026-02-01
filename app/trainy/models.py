@@ -35,6 +35,7 @@ class TrainingTime(models.Model):
     class Meta:
         verbose_name = 'Время начала тренировки'
         verbose_name_plural = 'Времена начала тренировки'
+        ordering = ['time']
 
     def __str__(self):
         return self.time.strftime('%H:%M')
