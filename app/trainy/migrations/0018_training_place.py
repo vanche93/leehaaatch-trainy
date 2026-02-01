@@ -3,6 +3,10 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
+def create_default_trainingplace(apps, schema_editor):
+    TrainingPlace = apps.get_model('trainy', 'TrainingPlace')
+    
+    TrainingPlace.objects.create(id=1, name='Default Place', latitude=0.0, longitude=0.0)
 
 class Migration(migrations.Migration):
 
