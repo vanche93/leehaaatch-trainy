@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Student, TrainingTime, TrainingTopic, Training, TrainingReq, TrainingPlace
 from django.utils.html import format_html
-
+from django.conf import settings
 
 admin.site.register(TrainingTime)
 admin.site.register(TrainingTopic)
@@ -14,10 +14,16 @@ class TrainingReqAdmin(admin.ModelAdmin):
     filter_horizontal = ("training_times", "topics")
 
     def has_add_permission(self, request):
-        return False
+        if settings.DEBUG:
+            return True
+        else:
+            return False
 
     def has_change_permission(self, request, obj=None):
-        return False
+        if settings.DEBUG:
+            return True
+        else:
+            return False
 
 
 class TrainingReqInline(admin.TabularInline):
@@ -25,10 +31,17 @@ class TrainingReqInline(admin.TabularInline):
     readonly_fields = ("student", "training", "training_times", "topics", "created_at")
 
     def has_add_permission(self, request, obj):
-        return False
+        print(settings.DEBUG)
+        if settings.DEBUG:
+            return True
+        else:
+            return False
 
     def has_change_permission(self, request, obj=None):
-        return False
+        if settings.DEBUG:
+            return True
+        else:
+            return False
 
 
 class TrainingInline(admin.TabularInline):
