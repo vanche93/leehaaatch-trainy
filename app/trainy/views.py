@@ -23,7 +23,7 @@ def get_or_create_student(auth_cred):
 def create_training_request(request):
     training = get_object_or_404(Training, id=request.GET.get("tgWebAppStartParam"))
     if training.status != "open":
-        messages.warning(request, "Запись на тренировку закрыта.")
+        messages.warning(request, "Голосование закрыто.")
 
     if request.method == "POST":
         form = TrainingReqForm(request.POST, training=training)
@@ -34,14 +34,14 @@ def create_training_request(request):
                 if TrainingReq.objects.filter(
                     student=student, training=training
                 ).exists():
-                    messages.warning(request, "Вы уже записаны на эту тренировку.")
+                    messages.warning(request, "Вы уже отправили голос.")
                 else:
                     training_req = form.save(commit=False)
                     training_req.training = training
                     training_req.student = student
                     training_req.save()
                     form.save_m2m()
-                    messages.success(request, "Запрос на тренировку отправлен.")
+                    messages.success(request, "Голос отправлен.")
             else:
                 messages.warning(request, "Ошибка авторизации.")
     else:

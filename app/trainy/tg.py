@@ -23,7 +23,7 @@ class Telegram:
 
     def send_open_message(self, training):
         open_message = (
-            f"✅ *Открыта запись на тренировку!*\n\n"
+            f"✅ *Открыто голосование на тренировку!*\n\n"
             + (f"📌 *Название:* {training.name}\n" if training.name else '')
             + f"📅 *Дата:* {training.date.strftime('%d.%m.%Y')}\n"
             + f"📍 *Место:* [{training.place.name}{", " + training.place.address if training.place.address else ''}]({training.place.yandex_maps_url()})\n"
@@ -36,7 +36,7 @@ class Telegram:
             "inline_keyboard": [
                 [
                     {
-                        "text": "Записатся на тренировку",
+                        "text": "Голосовать",
                         "url": settings.TELEGRAM_MINIAPP_URL + "?startapp=" + str(training.id),
                     }
                 ]
@@ -52,7 +52,7 @@ class Telegram:
 
     def send_close_message(self, training):
         close_message = (
-            f"✅ *Тренировка собрана!*\n\n"
+            f"✅ *Тренировка состоится!*\n\n"
             + (f"📌 *Название:* {training.name}\n" if training.name else '')
             + f"📅 *Дата:* {training.date.strftime('%d.%m.%Y')}\n"
             + f"📍 *Место:* [{training.place.name}{", " + training.place.address if training.place.address else ''}]({training.place.yandex_maps_url()})\n"

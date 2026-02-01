@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Отправить запрос на тренировку</title>
+    <title>Отправить голос</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
@@ -248,7 +248,7 @@
           <!-- Форма запроса -->
           <div class="card mb-4">
             <div class="card-body">
-              <h6 class="card-title">✍️ Отправить запрос на тренировку</h6>
+              <h6 class="card-title">✍️ Выберите время и тему</h6>
               <form method="post">
                 {% csrf_token %} {{ form|crispy }}
                 <input type="hidden" name="tg_init_data" id="tg_init_data" />
@@ -260,7 +260,7 @@
           {% if training.req_sum %}
           <div class="card"  tabindex="0">
             <div class="card-body">
-              <h6 class="card-title">📊 Запросы на тренировку</h6>
+              <h6 class="card-title">📊 Результаты голосования</h6>
               <div class="list-group list-group-flush">
                 {% for row in training.req_sum %}
                   <div class="list-group-item">
@@ -323,7 +323,7 @@
           Telegram.WebApp.close();
         });
       {% endif %}
-      tg.MainButton.setText("Отправить");
+      tg.MainButton.setText("Проголосовать!");
       tg.MainButton.show();
       tg.MainButton.onClick(() => {
         document.querySelector("form").submit();

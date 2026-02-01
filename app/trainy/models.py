@@ -71,7 +71,7 @@ class Training(models.Model):
                                    blank=True, null=True)
     status = models.CharField(verbose_name='Статус', default='created', choices=[
         ('created', 'Создана'),
-        ('open', 'Открыта для записи'),
+        ('open', 'Открыта для голосования'),
         ('full', 'Мест нет (заполнена)'),
         ('completed', 'Завершена'),
         ('canceled', 'Отменена')
