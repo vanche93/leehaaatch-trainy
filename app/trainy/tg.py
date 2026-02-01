@@ -111,7 +111,7 @@ class Telegram:
                 "parse_mode": "Markdown",
             }
             training_datetime = datetime.combine(training.date,training.final_time.time)
-            notify_time = training_datetime.astimezone(pytz.timezone('Europe/Moscow')) - timedelta(hours=settings.TELGRAM_NOTIFY_HOURS_BEFORE)
+            notify_time = training_datetime.astimezone(pytz.timezone('Europe/Moscow')) - timedelta(hours=settings.TELEGRAM_NOTIFY_HOURS_BEFORE)
             notify = send_message.using(run_after=notify_time)
             notify.enqueue(self.url,data)
 
