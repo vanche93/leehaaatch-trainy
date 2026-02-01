@@ -51,6 +51,16 @@ class Telegram:
         send_message.enqueue(self.url,data)
 
     def send_close_message(self, training):
+        participants_list = []
+        for p in training.participants.all():
+            if p.tg_name and p.name:
+                participants_list.append(f"  • {self.escape_md(p.name)} @{self.escape_md(p.tg_name)}")
+            elif p.tg_name:
+                participants_list.append(f"  • @{self.escape_md(p.tg_name)}")
+            elif p.name:
+                participants_list.append(f"  • {self.escape_md(p.name)}")
+            else:
+                participants_list.append(f"  • Аноним")
         close_message = (
             f"✅ *Тренировка состоится!*\n\n"
             + (f"📌 *Название:* {training.name}\n" if training.name else '')
@@ -59,7 +69,7 @@ class Telegram:
             + f"📚 *Тема:* {training.final_topic}\n"
             + f"🕒 *Время:* {training.final_time}\n\n"
             + f"👥 *Участники:*\n"
-            + f"{chr(10).join([f'  • @{self.escape_md(p.tg_name)}' for p in training.participants.all()])}"
+            + f"{chr(10).join(participants_list)}"
         )
         data = {
             "chat_id": self.chat_id,
