@@ -96,6 +96,11 @@ class TrainingAdmin(admin.ModelAdmin):
     readonly_fields = ("participants", "final_time", "final_topic")
     list_filter = ["status", "date", "place","final_topic","participants"]
 
+    @transaction.atomic
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        check_reqs(training=obj)
+
 @admin.register(TrainingPlace)
 class TrainingPlaceAdmin(admin.ModelAdmin):
     readonly_fields = ("open_in_maps",)
