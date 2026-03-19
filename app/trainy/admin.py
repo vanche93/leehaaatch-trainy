@@ -2,6 +2,8 @@ from django.contrib import admin
 from .models import Student, TrainingTime, TrainingTopic, Training, TrainingReq, TrainingPlace
 from django.utils.html import format_html
 from django.conf import settings
+from django.db import transaction
+from trainy.services.training_req_check import check_reqs
 
 admin.site.register(TrainingTime)
 admin.site.register(TrainingTopic)
@@ -30,6 +32,10 @@ class TrainingReqAdmin(admin.ModelAdmin):
         else:
             return False
 
+    @transaction.atomic
+    def save_related(self, request, form, formsets, change):
+            super().save_related(request, form, formsets, change)
+            check_reqs(training=form.instance.training)
 
 class TrainingReqInline(admin.TabularInline):
     model = TrainingReq

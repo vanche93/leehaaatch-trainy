@@ -1,12 +1,11 @@
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import ListView
 from .forms import TrainingReqForm
 from .models import Training, TrainingReq, Student
 from django.contrib import messages
-from datetime import date
 from django.conf import settings
 from telegram_webapp_auth.auth import TelegramAuthenticator
-
+from django.db import transaction
+from trainy.services.training_req_check import check_reqs
 
 def get_or_create_student(auth_cred):
     telegram_authenticator = TelegramAuthenticator(settings.TELEGRAM_SECRET_KEY)
@@ -19,7 +18,7 @@ def get_or_create_student(auth_cred):
     )
     return student
 
-
+@transaction.atomic
 def create_training_request(request):
     training = get_object_or_404(Training, id=request.GET.get("tgWebAppStartParam"))
     if training.status != "open":
@@ -42,6 +41,7 @@ def create_training_request(request):
                     training_req.save()
                     form.save_m2m()
                     messages.success(request, "Голос отправлен.")
+                    check_reqs(training=training)
             else:
                 messages.warning(request, "Ошибка авторизации.")
     else:
