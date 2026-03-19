@@ -1,4 +1,5 @@
 from ..models import TrainingReq, Training
+from ..tg import telegram
 from django.db import transaction
 
 
@@ -43,4 +44,7 @@ def check_reqs(training):
                         for rr in related_reqs:
                             training.participants.add(rr.student)
                         training.save()
+                        telegram.send_close_message(training)
+                        telegram.send_close_message_participants(training)
+                        telegram.send_notify_message_participants(training)
                         return
