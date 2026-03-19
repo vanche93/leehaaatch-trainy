@@ -38,7 +38,7 @@ def check_reqs(training):
                             training=training,
                             training_times=time,
                             topics=topic,
-                        ).select_related("student")
+                        ).select_related("student")[:training.max_participants]
 
                         training.participants.clear()
                         for rr in related_reqs:
