@@ -1,4 +1,10 @@
+from django.core.validators import RegexValidator
 from django.db import models
+
+no_underscore_validator = RegexValidator(
+    regex=r'^[^_]*$',
+    message="Нижнее подчеркивание запрещено"
+)
 
 class Student(models.Model):
     name = models.CharField(verbose_name='Имя', blank=True, null=True, unique=False)
@@ -14,8 +20,8 @@ class Student(models.Model):
         return f'{self.name if self.name else ""}({self.tg_name if self.tg_name else self.tg_id})'
 
 class TrainingPlace(models.Model):
-    name = models.CharField(verbose_name='Имя', unique=True)
-    address = models.CharField(verbose_name='Адрес', blank=True, null=True)
+    name = models.CharField(verbose_name='Имя', unique=True, validators=[no_underscore_validator])
+    address = models.CharField(verbose_name='Адрес', blank=True, null=True, validators=[no_underscore_validator])
     latitude = models.FloatField(verbose_name='Широта')
     longitude = models.FloatField(verbose_name='Долгота')
 
@@ -41,7 +47,7 @@ class TrainingTime(models.Model):
         return self.time.strftime('%H:%M')
 
 class TrainingTopic(models.Model):
-    name = models.CharField(verbose_name='Имя', unique=True)
+    name = models.CharField(verbose_name='Имя', unique=True, validators=[no_underscore_validator])
     description = models.TextField(verbose_name='Описание',blank=True)
     image = models.ImageField(verbose_name='Изображение',blank=True)
 
@@ -53,7 +59,7 @@ class TrainingTopic(models.Model):
         return self.name
 
 class Training(models.Model):
-    name = models.CharField(verbose_name='Имя', blank=True, null=True)
+    name = models.CharField(verbose_name='Имя', blank=True, null=True, validators=[no_underscore_validator])
     description = models.TextField(verbose_name='Описание',blank=True)
     place = models.ForeignKey(TrainingPlace, verbose_name='Локация',
                                    on_delete=models.PROTECT, related_name='place',
