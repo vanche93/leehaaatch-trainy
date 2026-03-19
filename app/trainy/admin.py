@@ -99,7 +99,8 @@ class TrainingAdmin(admin.ModelAdmin):
     @transaction.atomic
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-        check_reqs(training=obj)
+        if obj.status == 'open':
+            check_reqs(training=obj)
 
 @admin.register(TrainingPlace)
 class TrainingPlaceAdmin(admin.ModelAdmin):
